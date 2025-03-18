@@ -5,11 +5,13 @@ const porta = process.env.PORT
 
 const cadastro = require("./routes/cadastro")
 const login = require("./routes/login")
+const alterarSenha = require("./routes/alterarSenha")
 
 
 app.use(express.json());
 app.use("/api/cadastro", cadastro)
 app.use("/api/login", login)
+app.use("/api/alterarsenha", alterarSenha)
 
 app.listen(porta, () => {
   console.log(`Servidor rodando na porta http://localhost:${porta}`);
