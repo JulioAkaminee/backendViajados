@@ -3,7 +3,7 @@ const db = require("../db/conn.js");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-
+const verificarToken = require("../middlewares/verificarToken.js")
 const router = express.Router();
 
 //Email e senha por variaveis de ambiente
@@ -268,7 +268,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password",  async (req, res) => {
   const { email, token, newPassword } = req.body;
 
   if (!email || !token || !newPassword) {
@@ -286,10 +286,10 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).send({ error: "Token inválido ou expirado." });
     }
 
-    // Criptografar a nova senha
+    // Criptografa a nova senha
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Atualizar a senha e limpar o token
+    // Atualiza a senha e limpar o token
     await db.query(
       "UPDATE usuario SET senha = ?, token_reset = NULL, reset_tempo = NULL WHERE email = ?",
       [hashedPassword, email]
