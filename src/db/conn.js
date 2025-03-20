@@ -9,19 +9,25 @@ const pool = mysql.createPool({
     port: process.env.DB_PORT || 3306,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    ssl: { rejectUnauthorized: false }  // 🔹 Adicionado para conexões seguras
 });
 
 async function testarConexao() {
     try {
-        const [rows] = await pool.query('SELECT 1');
-        console.log('Conexão bem-sucedida!', rows);
-        return rows;
+        console.log('🔄 Tentando conectar ao banco de dados...');
+        const conexao = await pool.getConnection(); // 🔹 Obtém uma conexão
+        const [rows] = await conexao.query('SELECT 1'); // 🔹 Testa a conexão
+        conexao.release(); // 🔹 Libera a conexão após o uso
+        console.log('✅ Conexão bem-sucedida!', rows);
     } catch (err) {
-        console.error('Erro ao conectar ao banco de dados:', err);
-        throw err;
+        console.error('❌ Erro ao conectar ao banco de dados:');
+        console.error('Código:', err.code);
+        console.error('Mensagem:', err.sqlMessage || err.message);
+        console.error('Detalhes:', err);
     }
 }
 
 testarConexao();
-module.exports = pool; 
+
+module.exports = pool;
