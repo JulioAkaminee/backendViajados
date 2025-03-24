@@ -1,27 +1,36 @@
 const mysql = require('mysql2/promise');
+const fs = require('fs');
 require('dotenv').config();
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 3306,
+    port: process.env.DB_PORT,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    ssl: {
+        ca: fs.readFileSync('./src/db/ca.pem') // 🔹 Adiciona o certificado CA
+    }
 });
 
 async function testarConexao() {
     try {
-        const [rows] = await pool.query('SELECT 1');
-        console.log('Conexão bem-sucedida!', rows);
-        return rows;
+        console.log('🔄 Tentando conectar ao banco de dados...');
+        const conexao = await pool.getConnection();
+        const [rows] = await conexao.query('SELECT 1');
+        conexao.release();
+        console.log('✅ Conexão bem-sucedida!', rows);
     } catch (err) {
-        console.error('Erro ao conectar ao banco de dados:', err);
-        throw err;
+        console.error('❌ Erro ao conectar ao banco de dados:');
+        console.error('Código:', err.code);
+        console.error('Mensagem:', err.sqlMessage || err.message);
+        console.error('Detalhes:', err);
     }
 }
 
 testarConexao();
-module.exports = pool; 
+
+module.exports = pool;

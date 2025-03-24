@@ -87,7 +87,7 @@ router.post("/", async (req, res) => {
     );
 
     // Envia o email com o link de redefinição de senha
-    const resetLink = `http://localhost:3000/api/alterarsenha?email=${email}&token=${token}`;
+    const resetLink = `https://backendviajados.vercel.app/api/alterarsenha?email=${email}&token=${token}`;
     await sendEmail(
       email,
       "Recuperação de Senha Viajados",

@@ -5,7 +5,14 @@
   "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+<<<<<<< HEAD
     "start": "node src/server.js "
+=======
+    "start": "node src/server.js ",
+    "build": "tsc"
+
+
+>>>>>>> 5737cbf5c0455eba04a1ad9b42a231c769cfc7b5
   },
   "author": "",
   "license": "ISC",
