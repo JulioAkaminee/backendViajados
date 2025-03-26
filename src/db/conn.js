@@ -10,10 +10,8 @@ const pool = mysql.createPool({
     port: process.env.DB_PORT,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0,
-    ssl: {
-        ca: fs.readFileSync('./src/db/ca.pem') // 🔹 Adiciona o certificado CA
-    }
+  
+   
 });
 
 async function testarConexao() {
