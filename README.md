@@ -51,7 +51,7 @@
 
 ## 3- Alterar senha
 - Método: POST
-- Endpoint: /api/login
+- Endpoint: /api/alterarsenha
 - Descrição: Envia o email de redefinição de senha para o usuario.
 ```json
 {
@@ -77,7 +77,7 @@
 
    ## 6- Listagem de hoteis favoritos
 - Método: GET
-- Endpoint: /api/favoritos/hoteis
+- Endpoint: /api/favoritos/hoteis?idUsuario=
 - Descrição: Lista todos hoteis favoritos do usuario disponiveis.
   ```json
   (Necessario enviar baerer token que é retornado quando é feito o login);
@@ -85,7 +85,7 @@
 
   ## 7- Listagem de voos favoritos
 - Método: GET
-- Endpoint: /api/favoritos/voos
+- Endpoint: /api/favoritos/voos?idUsuario=
 - Descrição: Lista todos voos favoritos do usuario disponiveis.
 - Necessario enviar idUsuario na url para obter os favoritos do usuario exemplo: https://backend-viajados.vercel.app/api/favoritos/hoteis?idUsuario=3
   ```json
