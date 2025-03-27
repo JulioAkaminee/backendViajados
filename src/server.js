@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors'); // Importando o CORS
 const app = express();
 const porta = process.env.PORT || 3000;
 
@@ -11,6 +12,9 @@ const voos = require("./routes/voos");
 const favoritos = require("./routes/favoritos");
 const alterarDados = require("./routes/alterarDados");
 const verificarToken = require("./middlewares/verificarToken");
+
+// Middleware para permitir CORS para todas as origens
+app.use(cors());
 
 // Middleware para parsing de JSON
 app.use(express.json());
