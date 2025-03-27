@@ -20,7 +20,7 @@ router.post("/", async (req, res) => {
   try {
     // Verifica se o usuário existe no banco de dados
     const [rows] = await db.query(
-      "SELECT idUsuario, nome, senha FROM usuario WHERE email = ?",
+      "SELECT idUsuario, nome, senha FROM usuario WHERE email = ? AND ativo = 1",
       [email]
     );
     if (rows.length === 0) {
