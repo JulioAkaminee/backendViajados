@@ -33,7 +33,7 @@ app.use("/api/hoteis", hoteis);
 app.use("/api/voos", voos);
 app.use("/api/favoritos", favoritos);
 app.use("/api/alterardados", alterarDados);
-app.use("/api/alterar-imagem", alterarDados);
+app.use("/api/alterar-imagem", alterarImagem);
 
 app.listen(porta, () => {
   console.log(`Servidor rodando na porta ${porta}`);
