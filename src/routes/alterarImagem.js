@@ -1,14 +1,34 @@
 const express = require("express");
 const db = require("../db/conn");
 const multer = require("multer");
+const fs = require("fs");
 const { Storage } = require("megajs");
 require("dotenv").config();
 
 const router = express.Router();
 
 // Configuração do multer para armazenar temporariamente a imagem
-const storage = multer.memoryStorage(); // Usando memória ao invés de disco
-const upload = multer({ storage });
+const upload = multer({ dest: "uploads/" });
+
+// Criar uma instância do MEGA e garantir que o login seja realizado antes do upload
+const storage = new Storage({
+  email: process.env.MEGA_EMAIL,
+  password: process.env.MEGA_PASSWORD,
+});
+
+// Função para garantir que o login foi feito corretamente
+async function conectarMega() {
+  return new Promise((resolve, reject) => {
+    storage.login((err) => {
+      if (err) {
+        console.error("Erro ao conectar ao MEGA:", err);
+        return reject(err);
+      }
+      console.log("✅ Conectado ao MEGA!");
+      resolve();
+    });
+  });
+}
 
 // Rota para upload de imagem
 router.post("/", upload.single("foto_usuario"), async (req, res) => {
@@ -18,34 +38,27 @@ router.post("/", upload.single("foto_usuario"), async (req, res) => {
     return res.status(400).json({ error: "Usuário ou imagem ausente" });
   }
 
-  // O arquivo agora está em memória, sem ser salvo no disco
-  const fileBuffer = req.file.buffer;
+  const filePath = req.file.path;
 
   try {
-    // Conectar ao MEGA
-    const storage = new Storage({
-      email: process.env.MEGA_EMAIL,
-      password: process.env.MEGA_PASSWORD,
-    });
-
-    await new Promise((resolve) => storage.login(resolve));
+    // Conectar ao MEGA antes de tentar o upload
+    await conectarMega();
 
     // Criar upload para o MEGA
     const file = storage.upload({
-      name: req.file.originalname,  // Nome original do arquivo
-      size: fileBuffer.length,  // Tamanho do arquivo
+      name: req.file.filename,
+      size: fs.statSync(filePath).size,
     });
 
-    // Enviar o arquivo diretamente para o MEGA
-    const fileStream = require('stream').Readable.from(fileBuffer);  // Converte o buffer em stream
+    const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(file);
 
     file.on("complete", async () => {
-      console.log("Upload para MEGA concluído!");
+      console.log("✅ Upload para MEGA concluído!");
 
       // Obter a URL do arquivo no MEGA
       const fileLink = await file.link();
-      console.log("URL da imagem no MEGA:", fileLink);
+      console.log("🔗 URL da imagem no MEGA:", fileLink);
 
       // Salvar a URL no banco de dados
       const sql = "UPDATE usuarios SET foto_usuario = ? WHERE idUsuario = ?";
@@ -56,9 +69,12 @@ router.post("/", upload.single("foto_usuario"), async (req, res) => {
         }
         res.json({ message: "Imagem salva com sucesso!", foto_usuario: fileLink });
       });
+
+      // Remover o arquivo temporário localmente
+      fs.unlinkSync(filePath);
     });
   } catch (error) {
-    console.error("Erro no upload para MEGA:", error);
+    console.error("❌ Erro no upload para MEGA:", error);
     res.status(500).json({ error: "Erro no upload para MEGA" });
   }
 });
