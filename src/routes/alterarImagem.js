@@ -1,14 +1,9 @@
 const express = require("express");
 const db = require("../db/conn");
-const multer = require("multer");
-const fs = require("fs");
 const { Storage } = require("megajs");
 require("dotenv").config();
 
 const router = express.Router();
-
-// Configuração do multer para armazenar temporariamente a imagem
-const upload = multer({ dest: "uploads/" });
 
 // Criar uma instância do MEGA e garantir que o login seja realizado antes do upload
 const storage = new Storage({
@@ -30,28 +25,29 @@ async function conectarMega() {
   });
 }
 
-// Rota para upload de imagem
-router.post("/", upload.single("foto_usuario"), async (req, res) => {
-  const { idUsuario } = req.body;
+// Rota para upload de imagem diretamente para o MEGA
+router.post("/", async (req, res) => {
+  const { idUsuario, imagemBase64, nomeArquivo } = req.body;
 
-  if (!idUsuario || !req.file) {
-    return res.status(400).json({ error: "Usuário ou imagem ausente" });
+  if (!idUsuario || !imagemBase64 || !nomeArquivo) {
+    return res.status(400).json({ error: "Usuário, nome do arquivo ou imagem ausente" });
   }
-
-  const filePath = req.file.path;
 
   try {
     // Conectar ao MEGA antes de tentar o upload
     await conectarMega();
 
+    // Converter base64 para Buffer
+    const buffer = Buffer.from(imagemBase64, "base64");
+
     // Criar upload para o MEGA
     const file = storage.upload({
-      name: req.file.filename,
-      size: fs.statSync(filePath).size,
+      name: nomeArquivo,
+      size: buffer.length,
     });
 
-    const fileStream = fs.createReadStream(filePath);
-    fileStream.pipe(file);
+    file.write(buffer);
+    file.end();
 
     file.on("complete", async () => {
       console.log("✅ Upload para MEGA concluído!");
@@ -69,9 +65,6 @@ router.post("/", upload.single("foto_usuario"), async (req, res) => {
         }
         res.json({ message: "Imagem salva com sucesso!", foto_usuario: fileLink });
       });
-
-      // Remover o arquivo temporário localmente
-      fs.unlinkSync(filePath);
     });
   } catch (error) {
     console.error("❌ Erro no upload para MEGA:", error);
