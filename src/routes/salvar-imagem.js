@@ -25,7 +25,7 @@ router.post("/", upload.single('foto_usuario'), async (req, res) => {
     }
 
     // Verificar se o idUsuario existe no banco de dados
-    const verificarUsuarioQuery = 'SELECT * FROM usuarios WHERE id = ?';
+    const verificarUsuarioQuery = 'SELECT * FROM usuario WHERE id = ?';
     db.query(verificarUsuarioQuery, [idUsuario], (err, result) => {
       if (err) {
         console.error('Erro ao verificar o usuário:', err);
@@ -38,7 +38,7 @@ router.post("/", upload.single('foto_usuario'), async (req, res) => {
       }
 
       // Atualizar a foto do usuário
-      const updateQuery = 'UPDATE usuarios SET foto_usuario = ? WHERE id = ?';
+      const updateQuery = 'UPDATE usuario SET foto_usuario = ? WHERE id = ?';
       db.query(updateQuery, [foto, idUsuario], (err, result) => {
         if (err) {
           console.error('Erro ao atualizar a foto do usuário:', err);
