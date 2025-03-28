@@ -11,7 +11,7 @@ const hoteis = require("./routes/hoteis");
 const voos = require("./routes/voos");
 const favoritos = require("./routes/favoritos");
 const alterarDados = require("./routes/alterarDados");
-const verificarToken = require("./middlewares/verificarToken");]
+const verificarToken = require("./middlewares/verificarToken");
 const salvarimagem = require("./routes/salvar-imagem")
 
 
