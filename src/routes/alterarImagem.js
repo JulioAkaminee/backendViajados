@@ -29,6 +29,9 @@ async function conectarMega() {
 router.post("/", async (req, res) => {
   const { idUsuario, imagemBase64, nomeArquivo } = req.body;
 
+  console.log("📥 Dados Recebidos:", req.body);
+  console.log("📸 Arquivos Recebidos:", req.files);
+
   if (!idUsuario || !imagemBase64 || !nomeArquivo) {
     return res.status(400).json({ error: "Usuário, nome do arquivo ou imagem ausente" });
   }
