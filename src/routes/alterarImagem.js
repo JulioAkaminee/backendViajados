@@ -46,9 +46,10 @@ router.post("/", async (req, res) => {
     file.on("complete", async () => {
       console.log("✅ Upload concluído!");
 
-      // Buscar o arquivo no MEGA
-      const arquivos = await storage.mount(); // Lista os arquivos no MEGA
-      const arquivoSalvo = arquivos.children.find((f) => f.name === nomeArquivo);
+      // Buscar arquivos no MEGA (agora utilizando o método correto)
+      const arquivos = storage.filter(e => e.name.endsWith('.jpeg'), true); // Exemplo de filtragem
+
+      const arquivoSalvo = arquivos.find((f) => f.name === nomeArquivo);
 
       if (!arquivoSalvo) {
         return res.status(500).json({ error: "Erro ao recuperar o arquivo do MEGA" });
