@@ -20,7 +20,7 @@ router.put("/", async (req, res) => {
             return res.status(404).send({ message: "Usuário não encontrado" });
         }
         
-        res.send({ message: "Dados do usuário atualizados com sucesso" });
+        res.send({ message: "Dados do usuário atualizados com sucesso!" });
     } catch (err) {
         console.error('Erro ao atualizar dados do usuário:', err);
         res.status(500).send({ message: "Erro interno ao atualizar dados do usuário" });
