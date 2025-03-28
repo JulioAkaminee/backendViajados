@@ -1,53 +1,36 @@
 const express = require('express');
-const multer = require('multer');
 const db = require("../db/conn");
-
-// Configurar o armazenamento do multer para armazenar a foto como Blob
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
 
 const router = express.Router();
 
 // Rota para cadastrar a foto do usuário específico com idUsuario
-router.post("/", upload.single('foto_usuario'), async (req, res) => {
+router.post("/", async (req, res) => {
   try {
-    // Verificar se o arquivo foi enviado
-    if (!req.file) {
+    const { foto_usuario, idUsuario } = req.body; // Recebe a foto como base64 e o id do usuário
+
+    // Verificar se a foto e o idUsuario estão presentes
+    if (!foto_usuario) {
       return res.status(400).send('Foto do usuário é necessária.');
     }
 
-    const foto = req.file.buffer.toString('base64'); // Converter a foto para Base64
-    const { idUsuario } = req.body; // Recebe o id do usuário
-
-    // Verificar se o idUsuario está presente
     if (!idUsuario) {
       return res.status(400).send('idUsuario é necessário.');
     }
 
     // Verificar se o idUsuario existe no banco de dados
     const verificarUsuarioQuery = 'SELECT * FROM usuario WHERE idUsuario = ?';
-    db.query(verificarUsuarioQuery, [idUsuario], (err, result) => {
-      if (err) {
-        console.error('Erro ao verificar o usuário:', err);
-        return res.status(500).send('Erro ao verificar o usuário.');
-      }
+    const [usuario] = await db.query(verificarUsuarioQuery, [idUsuario]);
 
-      // Se o usuário não existir
-      if (result.length === 0) {
-        return res.status(404).send('Usuário não encontrado.');
-      }
+    // Se o usuário não existir
+    if (usuario.length === 0) {
+      return res.status(404).send('Usuário não encontrado.');
+    }
 
-      // Atualizar a foto do usuário
-      const updateQuery = 'UPDATE usuario SET foto_usuario = ? WHERE idUsuario = ?';
-      db.query(updateQuery, [foto, idUsuario], (err, result) => {
-        if (err) {
-          console.error('Erro ao atualizar a foto do usuário:', err);
-          return res.status(500).send('Erro ao cadastrar a foto do usuário.');
-        }
+    // Atualizar a foto do usuário
+    const updateQuery = 'UPDATE usuario SET foto_usuario = ? WHERE idUsuario = ?';
+    await db.query(updateQuery, [foto_usuario, idUsuario]);
 
-        res.status(200).send('Foto do usuário cadastrada com sucesso!');
-      });
-    });
+    res.status(200).send('Foto do usuário cadastrada com sucesso!');
   } catch (error) {
     console.error('Erro:', error);
     res.status(500).send('Erro interno do servidor');
