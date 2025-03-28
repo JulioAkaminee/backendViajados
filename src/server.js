@@ -12,6 +12,7 @@ const voos = require("./routes/voos");
 const favoritos = require("./routes/favoritos");
 const alterarDados = require("./routes/alterarDados");
 const verificarToken = require("./middlewares/verificarToken");
+const alterarImagem = require(("./routes/alterarImagem"))
 
 // Middleware para permitir CORS para todas as origens
 app.use(cors());
@@ -32,6 +33,7 @@ app.use("/api/hoteis", hoteis);
 app.use("/api/voos", voos);
 app.use("/api/favoritos", favoritos);
 app.use("/api/alterardados", alterarDados);
+app.use("/api/alterar-imagem", alterarDados);
 
 app.listen(porta, () => {
   console.log(`Servidor rodando na porta ${porta}`);
