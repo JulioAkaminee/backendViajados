@@ -42,7 +42,14 @@ router.post("/", async (req, res) => {
     await conectarMega();
 
     // Remove o prefixo "data:image/...;base64," da imagem
-    const buffer = Buffer.from(imagemBase64.split(',')[1], 'base64');
+    const base64Data = imagemBase64.split(',')[1];
+
+    if (!base64Data) {
+      return res.status(400).json({ error: "Imagem Base64 inválida" });
+    }
+
+    // Cria o buffer a partir da string base64
+    const buffer = Buffer.from(base64Data, 'base64');
 
     // Cria o arquivo no MEGA e envia o buffer
     const file = storage.root.upload({
