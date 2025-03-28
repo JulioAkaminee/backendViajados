@@ -6,7 +6,6 @@ require("dotenv").config();
 
 const router = express.Router();
 
-// Validação de credenciais
 if (!process.env.MEGA_EMAIL || !process.env.MEGA_PASSWORD) {
   console.error("Erro: Credenciais do MEGA não configuradas no .env");
   process.exit(1);
@@ -21,23 +20,20 @@ let isMegaConnected = false;
 
 async function initializeMega() {
   if (!isMegaConnected) {
-    await storage.ready; // Usa a Promise nat  do Storage
+    await storage.ready;
     isMegaConnected = true;
     console.log("✅ Conectado ao MEGA!");
   }
 }
 
-const uploadToMega = (buffer, nomeArquivo) => {
-  return new Promise((resolve, reject) => {
-    const file = storage.root.upload({
-      name: nomeArquivo,
-      size: buffer.length,
-    });
-    file.write(buffer);
-    file.end();
-    file.on("complete", () => resolve(file));
-    file.on("error", (err) => reject(err));
+const uploadToMega = async (buffer, nomeArquivo) => {
+  const file = storage.root.upload({
+    name: nomeArquivo,
+    size: buffer.length,
   });
+  file.write(buffer);
+  file.end();
+  return await file.complete; // Retorna o MutableFile
 };
 
 const query = util.promisify(db.query).bind(db);
