@@ -57,7 +57,7 @@ router.get("/dadosusuario", async (req, res) => {
         return res.status(400).send({ message: "idUsuario é obrigatório" });
     }
 
-    const queryDadosUsuario = "SELECT nome, cpf, data_nascimento, nacionalidade,foto_usuario sexo FROM usuario WHERE idUsuario = ?";
+    const queryDadosUsuario = "SELECT nome, cpf, data_nascimento, nacionalidade,sexo, foto_usuario FROM usuario WHERE idUsuario = ?";
 
     try {
         const [result] = await db.query(queryDadosUsuario, [idUsuario]);
