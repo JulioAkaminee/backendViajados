@@ -16,7 +16,7 @@ router.post("/", upload.single('foto_usuario'), async (req, res) => {
       return res.status(400).send('Foto do usuário é necessária.');
     }
 
-    const foto = req.file.buffer; // Foto em formato Blob
+    const foto = req.file.buffer.toString('base64'); // Converter a foto para Base64
     const { idUsuario } = req.body; // Recebe o id do usuário
 
     // Verificar se o idUsuario está presente
