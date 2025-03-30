@@ -18,7 +18,7 @@ router.get("/voos/:idUsuario", async (req, res) => {
         );
 
         res.json({
-            success: true,
+            status: "Sucesso ao listar voos agendados",
             data: rows
         });
     } catch (error) {
@@ -45,7 +45,7 @@ router.get("/hospedagens/:idUsuario", async (req, res) => {
         );
 
         res.json({
-            success: true,
+            status: "Sucesso ao listar hoteis reservados",
             data: rows
         });
     } catch (error) {
