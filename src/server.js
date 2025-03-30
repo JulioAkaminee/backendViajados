@@ -13,7 +13,7 @@ const favoritos = require("./routes/favoritos");
 const alterarDados = require("./routes/alterarDados");
 const verificarToken = require("./middlewares/verificarToken");
 const salvarimagem = require("./routes/salvar-imagem")
-
+const reservas = require("./routes/reservas")
 
 // Middleware para permitir CORS para todas as origens
 app.use(cors());
@@ -35,6 +35,7 @@ app.use("/api/voos", voos);
 app.use("/api/favoritos", favoritos);
 app.use("/api/alterardados", alterarDados);
 app.use("/api/salvar-imagem",salvarimagem);
+app.use("/api/reservas",reservas);
 
 
 app.listen(porta, () => {
