@@ -87,7 +87,7 @@ router.post("/voos", async (req, res) => {
         // Adicionar status 'agendada' na reserva
         const [result] = await conn.execute(
             `INSERT INTO reserva_voo (idVoos, idUsuario, data_reserva, status)
-             VALUES (?, ?, ?, 'agendada')`,
+             VALUES (?, ?, ?, 'agendado')`,
             [idVoos, idUsuario, data_reserva]
         );
 
@@ -142,7 +142,7 @@ router.post("/hospedagens", async (req, res) => {
         // Adicionar status 'agendada' na reserva
         const [result] = await conn.execute(
             `INSERT INTO hospedagem (idHoteis, idUsuario, data_entrada, data_saida, status)
-             VALUES (?, ?, ?, ?, 'agendada')`,
+             VALUES (?, ?, ?, ?, 'agendado')`,
             [idHoteis, idUsuario, data_entrada, data_saida]
         );
 
