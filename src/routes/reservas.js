@@ -9,7 +9,7 @@ router.get("/voos/:idUsuario", async (req, res) => {
         const idUsuario = req.params.idUsuario;
 
         const [rows] = await conn.execute(
-            `SELECT r.idReserva, r.idVoos, r.data_reserva, 
+            `SELECT r.idReserva, r.idVoos, r.data_reserva, r.status,
                     v.origem, v.destino, v.preco, v.data AS data_voo
              FROM reserva_voo r
              JOIN voos v ON r.idVoos = v.idVoos
@@ -36,7 +36,7 @@ router.get("/hospedagens/:idUsuario", async (req, res) => {
         const idUsuario = req.params.idUsuario;
 
         const [rows] = await conn.execute(
-            `SELECT h.idHospedagem, h.idHoteis, h.data_entrada, h.data_saida,
+            `SELECT h.idHospedagem, h.idHoteis, h.data_entrada, h.data_saida, h.status,
                     ht.nome, ht.preco_diaria, ht.descricao, ht.avaliacao
              FROM hospedagem h
              JOIN hoteis ht ON h.idHoteis = ht.idHoteis
@@ -84,9 +84,10 @@ router.post("/voos", async (req, res) => {
             });
         }
 
+        // Adicionar status 'agendada' na reserva
         const [result] = await conn.execute(
-            `INSERT INTO reserva_voo (idVoos, idUsuario, data_reserva)
-             VALUES (?, ?, ?)`,
+            `INSERT INTO reserva_voo (idVoos, idUsuario, data_reserva, status)
+             VALUES (?, ?, ?, 'agendada')`,
             [idVoos, idUsuario, data_reserva]
         );
 
@@ -138,9 +139,10 @@ router.post("/hospedagens", async (req, res) => {
             });
         }
 
+        // Adicionar status 'agendada' na reserva
         const [result] = await conn.execute(
-            `INSERT INTO hospedagem (idHoteis, idUsuario, data_entrada, data_saida)
-             VALUES (?, ?, ?, ?)`,
+            `INSERT INTO hospedagem (idHoteis, idUsuario, data_entrada, data_saida, status)
+             VALUES (?, ?, ?, ?, 'agendada')`,
             [idHoteis, idUsuario, data_entrada, data_saida]
         );
 
