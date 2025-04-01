@@ -6,9 +6,8 @@ const router = express.Router();
 // Rota para cadastrar a foto do usuário específico com idUsuario
 router.post("/", async (req, res) => {
   try {
-    const { foto_usuario, idUsuario } = req.body; // Recebe a foto como base64 e o id do usuário
+    const { foto_usuario, idUsuario } = req.body;
 
-    // Verificar se a foto e o idUsuario estão presentes
     if (!foto_usuario) {
       return res.status(400).send('Foto do usuário é necessária.');
     }

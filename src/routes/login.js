@@ -27,7 +27,7 @@ router.post("/", async (req, res) => {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
 
-    // Atribuindo informações do banco de dados do usuário a uma variável
+
     const usuario = rows[0];
 
     // Verifica se a senha está correta
@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
     // Retorna o token e informações do usuário
     return res.status(200).json({
       message: "Login realizado com sucesso.",
-      token: token, // Enviando o token para o cliente
+      token: token,
       usuario: {
         idUsuario: usuario.idUsuario,
         nome: usuario.nome,
@@ -65,12 +65,6 @@ router.post("/", async (req, res) => {
 
 
 
-// Exemplo de rota protegida (opcional)
-router.get("/perfil", verificarToken, (req, res) => {
-  res.json({
-    message: "Acesso ao perfil concedido.",
-    usuario: req.usuario,
-  });
-});
+
 
 module.exports = router;

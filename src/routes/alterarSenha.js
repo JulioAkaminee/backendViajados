@@ -6,7 +6,7 @@ const crypto = require("crypto");
 const verificarToken = require("../middlewares/verificarToken.js")
 const router = express.Router();
 
-//Email e senha por variaveis de ambiente
+
 const email = process.env.EMAIL_USER;
 const pass = process.env.EMAIL_PASS;
 
@@ -54,8 +54,8 @@ const generateResetToken = () => {
   const token = crypto.randomBytes(20).toString("hex");
   const now = new Date();
   // Ajuste para o horario de são paulo pois o servidor do mysql é 3 horas a frente
-  const expires = new Date(now.getTime() + 15 * 60 * 1000 - (3 * 60 * 60 * 1000)); // Subtrai 3 horas
-  return { token, expires: expires.toISOString().slice(0, 19).replace("T", " ") }; // Formato YYYY-MM-DD HH:MM:SS
+  const expires = new Date(now.getTime() + 15 * 60 * 1000 - (3 * 60 * 60 * 1000)); 
+  return { token, expires: expires.toISOString().slice(0, 19).replace("T", " ") };
 };
 
 router.post("/", async (req, res) => {
@@ -76,10 +76,7 @@ router.post("/", async (req, res) => {
     // Gera token e tempo de expiração
     const { token, expires } = generateResetToken();
 
-    // Log para teste (tirar depois)
-    console.log("Horário atual Node.js:", new Date());
-    console.log("Expires gerado:", expires);
-
+ 
     // Salvar o token e o tempo na tabela usuario
     await db.query(
       "UPDATE usuario SET token_reset = ?, reset_tempo = ? WHERE email = ?",
@@ -124,10 +121,7 @@ router.get("/", async (req, res) => {
       [email, token]
     );
 
-    // Log para depuração
-    const [mysqlTime] = await db.query("SELECT CONVERT_TZ(NOW(), @@session.time_zone, 'America/Sao_Paulo') as now");
-    console.log("Horário ajustado MySQL:", mysqlTime[0].now);
-    console.log("Reset_tempo no banco:", user[0]?.reset_tempo);
+    
 
     if (user.length === 0) {
       return res.status(400).send(`

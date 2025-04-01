@@ -62,7 +62,6 @@ router.post("/voos", async (req, res) => {
     try {
         const { idVoos, idUsuario, data_reserva } = req.body;
 
-        // Validação básica
         if (!idVoos || !idUsuario || !data_reserva) {
             return res.status(400).json({
                 success: false,
@@ -84,7 +83,7 @@ router.post("/voos", async (req, res) => {
             });
         }
 
-        // Adicionar status 'agendada' na reserva
+        // Adicionar status 'agendado' na reserva
         const [result] = await conn.execute(
             `INSERT INTO reserva_voo (idVoos, idUsuario, data_reserva, status)
              VALUES (?, ?, ?, 'agendado')`,
@@ -139,7 +138,7 @@ router.post("/hospedagens", async (req, res) => {
             });
         }
 
-        // Adicionar status 'agendada' na reserva
+        // Adicionar status 'agendado' na reserva
         const [result] = await conn.execute(
             `INSERT INTO hospedagem (idHoteis, idUsuario, data_entrada, data_saida, status)
              VALUES (?, ?, ?, ?, 'agendado')`,

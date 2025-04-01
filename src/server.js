@@ -15,10 +15,10 @@ const verificarToken = require("./middlewares/verificarToken");
 const salvarimagem = require("./routes/salvar-imagem")
 const reservas = require("./routes/reservas")
 
-// Middleware para permitir CORS para todas as origens
+
 app.use(cors());
 
-// Middleware para parsing de JSON
+
 app.use(express.json());
 
 // Rotas públicas

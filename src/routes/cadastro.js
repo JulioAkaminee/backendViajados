@@ -7,22 +7,22 @@ const router = express.Router();
 router.post("/", async (req, res) => {
     const { email, senha, nome, cpf, nacionalidade, sexo, ativo } = req.body;
 
-    // Verifica se todos os campos obrigatórios foram preenchidos
+
     if (!email || !senha || !nome || !cpf || !sexo) {
         return res.status(400).json({ error: "Preencha todos os campos obrigatórios." });
     }
 
-    // Validação de email
+ 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({ error: "Email inválido." });
     }
 
-    // Validação de CPF (algoritmo oficial)
+    /
     const validarCpf = (cpf) => {
-        cpf = cpf.replace(/\D/g, ""); // Remove qualquer caractere não numérico
+        cpf = cpf.replace(/\D/g, "");
         
-        // Verifica se o CPF tem 11 dígitos e se não é uma sequência repetitiva
+      
         if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
       
         return true;
