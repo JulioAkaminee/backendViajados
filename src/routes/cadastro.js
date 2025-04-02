@@ -18,7 +18,7 @@ router.post("/", async (req, res) => {
         return res.status(400).json({ error: "Email inválido." });
     }
 
-    /
+    
     const validarCpf = (cpf) => {
         cpf = cpf.replace(/\D/g, "");
         
