@@ -75,7 +75,6 @@ router.get("/hospedagens/:idUsuario", async (req, res) => {
     }
 });
 
-// Rota para cadastrar uma reserva de voo
 router.post("/voos", async (req, res) => {
     try {
         const { idVoos, idUsuario, data_reserva } = req.body;
@@ -113,7 +112,7 @@ router.post("/voos", async (req, res) => {
             });
         }
 
-        // Verificar se o voo existe e pegar sua data
+        // Verificar se o voo existe
         const [voo] = await conn.execute(
             `SELECT idVoos, data AS data_voo FROM voos WHERE idVoos = ?`,
             [idVoosNum]
@@ -125,21 +124,20 @@ router.post("/voos", async (req, res) => {
             });
         }
 
-        // Verificar se já existe reserva para este voo na mesma data_reserva
+        // Verificar duplicidade com base em idUsuario e idVoos
         const [existingReservations] = await conn.execute(
             `SELECT idReserva, data_reserva
              FROM reserva_voo
              WHERE idVoos = ? 
-             AND idUsuario = ? 
-             AND data_reserva = ?
+             AND idUsuario = ?
              AND status NOT IN ('cancelado')`,
-            [idVoosNum, idUsuarioNum, data_reserva]
+            [idVoosNum, idUsuarioNum]
         );
 
         if (existingReservations.length > 0) {
             return res.status(409).json({
                 success: false,
-                message: "Já existe uma reserva para este voo na mesma data",
+                message: "Você já possui uma reserva para este voo",
                 conflictingReservations: existingReservations
             });
         }
@@ -160,12 +158,14 @@ router.post("/voos", async (req, res) => {
         if (error.code === "ER_DUP_ENTRY") {
             res.status(409).json({
                 success: false,
-                message: "Erro de duplicidade na reserva"
+                message: "Você já possui uma reserva para este voo",
+                errorDetails: error.sqlMessage
             });
         } else {
             res.status(500).json({
                 success: false,
-                message: "Erro ao cadastrar reserva de voo"
+                message: "Erro ao cadastrar reserva de voo",
+                errorDetails: error.message
             });
         }
     }
