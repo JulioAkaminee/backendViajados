@@ -124,20 +124,21 @@ router.post("/voos", async (req, res) => {
             });
         }
 
-        // Verificar duplicidade com base em idUsuario e idVoos
+        // Verificar duplicidade com base em idUsuario, idVoos e data_reserva
         const [existingReservations] = await conn.execute(
             `SELECT idReserva, data_reserva
              FROM reserva_voo
              WHERE idVoos = ? 
-             AND idUsuario = ?
+             AND idUsuario = ? 
+             AND data_reserva = ?
              AND status NOT IN ('cancelado')`,
-            [idVoosNum, idUsuarioNum]
+            [idVoosNum, idUsuarioNum, data_reserva]
         );
 
         if (existingReservations.length > 0) {
             return res.status(409).json({
                 success: false,
-                message: "Você já possui uma reserva para este voo",
+                message: `Você já possui uma reserva para este voo na data ${data_reserva}`,
                 conflictingReservations: existingReservations
             });
         }
@@ -158,7 +159,7 @@ router.post("/voos", async (req, res) => {
         if (error.code === "ER_DUP_ENTRY") {
             res.status(409).json({
                 success: false,
-                message: "Você já possui uma reserva para este voo",
+                message: `Você já possui uma reserva para este voo na data ${req.body.data_reserva}`,
                 errorDetails: error.sqlMessage
             });
         } else {
