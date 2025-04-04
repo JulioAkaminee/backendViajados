@@ -1,9 +1,0 @@
-## VARIAVEIS .ENV
-
-
-PORT=3000
-DB_HOST=mysql-3616410f-viajados.h.aivencloud.com
-DB_USER=avnadmin
-DB_PASSWORD=AVNS_4430Q8TVTq5-8IDfjTi
-DB_NAME=viajados
-DB_PORT=12385
