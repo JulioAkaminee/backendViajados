@@ -3,10 +3,22 @@ const conn = require("../db/conn");
 
 const router = express.Router();
 
+// Função auxiliar para validar datas
+const isValidDate = (dateString) => {
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date);
+};
+
 // Rota para listar reservas de voos de um usuário
 router.get("/voos/:idUsuario", async (req, res) => {
     try {
-        const idUsuario = req.params.idUsuario;
+        const idUsuario = parseInt(req.params.idUsuario);
+        if (isNaN(idUsuario) || idUsuario <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "ID de usuário inválido"
+            });
+        }
 
         const [rows] = await conn.execute(
             `SELECT r.idReserva, r.idVoos, r.data_reserva, r.status,
@@ -33,7 +45,13 @@ router.get("/voos/:idUsuario", async (req, res) => {
 // Rota para listar hospedagens de um usuário
 router.get("/hospedagens/:idUsuario", async (req, res) => {
     try {
-        const idUsuario = req.params.idUsuario;
+        const idUsuario = parseInt(req.params.idUsuario);
+        if (isNaN(idUsuario) || idUsuario <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "ID de usuário inválido"
+            });
+        }
 
         const [rows] = await conn.execute(
             `SELECT h.idHospedagem, h.idHoteis, h.data_entrada, h.data_saida, h.status,
@@ -62,6 +80,7 @@ router.post("/voos", async (req, res) => {
     try {
         const { idVoos, idUsuario, data_reserva } = req.body;
 
+        // Validações
         if (!idVoos || !idUsuario || !data_reserva) {
             return res.status(400).json({
                 success: false,
@@ -69,25 +88,69 @@ router.post("/voos", async (req, res) => {
             });
         }
 
-        // Verificar se a reserva já existe para esse voo e usuário
-        const [existingVoo] = await conn.execute(
-            `SELECT idReserva FROM reserva_voo 
-             WHERE idVoos = ? AND idUsuario = ?`,
-            [idVoos, idUsuario]
-        );
-
-        if (existingVoo.length > 0) {
-            return res.status(409).json({
+        const idVoosNum = parseInt(idVoos);
+        const idUsuarioNum = parseInt(idUsuario);
+        
+        if (isNaN(idVoosNum) || idVoosNum <= 0 || isNaN(idUsuarioNum) || idUsuarioNum <= 0) {
+            return res.status(400).json({
                 success: false,
-                message: "Este voo já foi reservado por este usuário"
+                message: "IDs devem ser números positivos"
             });
         }
 
-        // Adicionar status 'agendado' na reserva
+        if (!isValidDate(data_reserva)) {
+            return res.status(400).json({
+                success: false,
+                message: "Data de reserva inválida"
+            });
+        }
+
+        const hoje = new Date();
+        if (new Date(data_reserva) < hoje.setHours(0, 0, 0, 0)) {
+            return res.status(400).json({
+                success: false,
+                message: "Data de reserva não pode ser anterior ao dia atual"
+            });
+        }
+
+        // Verificar se o voo existe e pegar sua data
+        const [voo] = await conn.execute(
+            `SELECT idVoos, data AS data_voo FROM voos WHERE idVoos = ?`,
+            [idVoosNum]
+        );
+        if (voo.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Voo não encontrado"
+            });
+        }
+
+        const dataVoo = new Date(voo[0].data_voo);
+
+        // Verificar se já existe reserva para este voo na mesma data
+        const [existingReservations] = await conn.execute(
+            `SELECT r.idReserva, v.data AS data_voo
+             FROM reserva_voo r
+             JOIN voos v ON r.idVoos = v.idVoos
+             WHERE r.idVoos = ? 
+             AND r.idUsuario = ? 
+             AND r.status NOT IN ('cancelado')
+             AND v.data = ?`,
+            [idVoosNum, idUsuarioNum, voo[0].data_voo]
+        );
+
+        if (existingReservations.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: "Já existe uma reserva para este voo na mesma data",
+                conflictingReservations: existingReservations
+            });
+        }
+
         const [result] = await conn.execute(
             `INSERT INTO reserva_voo (idVoos, idUsuario, data_reserva, status)
              VALUES (?, ?, ?, 'agendado')`,
-            [idVoos, idUsuario, data_reserva]
+            [idVoosNum, idUsuarioNum, data_reserva]
         );
 
         res.status(201).json({
@@ -100,7 +163,7 @@ router.post("/voos", async (req, res) => {
         if (error.code === "ER_DUP_ENTRY") {
             res.status(409).json({
                 success: false,
-                message: "Este voo já foi reservado por este usuário"
+                message: "Erro de duplicidade na reserva"
             });
         } else {
             res.status(500).json({
@@ -116,7 +179,7 @@ router.post("/hospedagens", async (req, res) => {
     try {
         const { idHoteis, idUsuario, data_entrada, data_saida } = req.body;
 
-        // Validação básica
+        // Validações
         if (!idHoteis || !idUsuario || !data_entrada || !data_saida) {
             return res.status(400).json({
                 success: false,
@@ -124,25 +187,89 @@ router.post("/hospedagens", async (req, res) => {
             });
         }
 
-        // Verificar se a hospedagem já existe para esse hotel e usuário
-        const [existingHotel] = await conn.execute(
-            `SELECT idHospedagem FROM hospedagem 
-             WHERE idHoteis = ? AND idUsuario = ?`,
-            [idHoteis, idUsuario]
-        );
+        const idHoteisNum = parseInt(idHoteis);
+        const idUsuarioNum = parseInt(idUsuario);
 
-        if (existingHotel.length > 0) {
-            return res.status(409).json({
+        if (isNaN(idHoteisNum) || idHoteisNum <= 0 || isNaN(idUsuarioNum) || idUsuarioNum <= 0) {
+            return res.status(400).json({
                 success: false,
-                message: "Este hotel já foi reservado por este usuário"
+                message: "IDs devem ser números positivos"
             });
         }
 
-        // Adicionar status 'agendado' na reserva
+        if (!isValidDate(data_entrada) || !isValidDate(data_saida)) {
+            return res.status(400).json({
+                success: false,
+                message: "Datas inválidas"
+            });
+        }
+
+        const entrada = new Date(data_entrada);
+        const saida = new Date(data_saida);
+        const hoje = new Date();
+
+        if (entrada < hoje.setHours(0, 0, 0, 0)) {
+            return res.status(400).json({
+                success: false,
+                message: "Data de entrada não pode ser anterior ao dia atual"
+            });
+        }
+
+        if (entrada >= saida) {
+            return res.status(400).json({
+                success: false,
+                message: "Data de entrada deve ser anterior à data de saída"
+            });
+        }
+
+        // Verificar se o hotel existe
+        const [hotel] = await conn.execute(
+            `SELECT idHoteis FROM hoteis WHERE idHoteis = ?`,
+            [idHoteisNum]
+        );
+        if (hotel.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Hotel não encontrado"
+            });
+        }
+
+        // Verificar se há conflito de datas com reservas existentes
+        const [existingBookings] = await conn.execute(
+            `SELECT idHospedagem, data_entrada, data_saida 
+             FROM hospedagem 
+             WHERE idHoteis = ? 
+             AND idUsuario = ? 
+             AND status NOT IN ('cancelado') 
+             AND (
+                 (data_entrada <= ? AND data_saida >= ?) OR
+                 (data_entrada <= ? AND data_saida >= ?) OR
+                 (data_entrada >= ? AND data_saida <= ?)
+             )`,
+            [
+                idHoteisNum,
+                idUsuarioNum,
+                data_saida,
+                data_entrada,
+                data_saida,
+                data_entrada,
+                data_entrada,
+                data_saida
+            ]
+        );
+
+        if (existingBookings.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: "Já existe uma reserva para este hotel neste período",
+                conflictingBookings: existingBookings
+            });
+        }
+
         const [result] = await conn.execute(
             `INSERT INTO hospedagem (idHoteis, idUsuario, data_entrada, data_saida, status)
              VALUES (?, ?, ?, ?, 'agendado')`,
-            [idHoteis, idUsuario, data_entrada, data_saida]
+            [idHoteisNum, idUsuarioNum, data_entrada, data_saida]
         );
 
         res.status(201).json({
