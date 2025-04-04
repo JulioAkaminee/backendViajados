@@ -125,18 +125,15 @@ router.post("/voos", async (req, res) => {
             });
         }
 
-        const dataVoo = new Date(voo[0].data_voo);
-
-        // Verificar se já existe reserva para este voo na mesma data
+        // Verificar se já existe reserva para este voo na mesma data_reserva
         const [existingReservations] = await conn.execute(
-            `SELECT r.idReserva, v.data AS data_voo
-             FROM reserva_voo r
-             JOIN voos v ON r.idVoos = v.idVoos
-             WHERE r.idVoos = ? 
-             AND r.idUsuario = ? 
-             AND r.status NOT IN ('cancelado')
-             AND v.data = ?`,
-            [idVoosNum, idUsuarioNum, voo[0].data_voo]
+            `SELECT idReserva, data_reserva
+             FROM reserva_voo
+             WHERE idVoos = ? 
+             AND idUsuario = ? 
+             AND data_reserva = ?
+             AND status NOT IN ('cancelado')`,
+            [idVoosNum, idUsuarioNum, data_reserva]
         );
 
         if (existingReservations.length > 0) {
